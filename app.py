@@ -1,23 +1,7 @@
-
----
-
-# 🚀 Now FULL `app.py` (clean production version)
-
-This is your final working version with:
-# QC engine  
-# ITT + SRT support  
-# Highlighting  
-# Sidebar dashboard  
-# History system  
-
----
-
-## 🟦 FULL APP.PY
-
-```python id="app_final"
 import streamlit as st
 import os
 import json
+import uuid
 
 from parsers.srt_parser import parse_srt
 from parsers.itt_parser import parse_itt
@@ -27,7 +11,7 @@ from db import init_db, save_report, get_history
 
 
 # -----------------------
-# INIT DB
+# INIT DATABASE
 # -----------------------
 init_db()
 
@@ -53,7 +37,7 @@ def parse_file(file_path):
 # -----------------------
 st.set_page_config(page_title="Subtitle QC Tool", layout="wide")
 
-st.title("🎬 Subtitle QC Analyzer")
+st.title("🎬 Subtitle QC Analyzer (SRT + ITT)")
 
 
 uploaded_file = st.file_uploader("Upload subtitle file", type=["srt", "itt"])
@@ -62,16 +46,19 @@ uploaded_file = st.file_uploader("Upload subtitle file", type=["srt", "itt"])
 # -----------------------
 # PROCESS FILE
 # -----------------------
-if uploaded_file:
+if uploaded_file is not None:
 
-    temp_path = "temp_file" + os.path.splitext(uploaded_file.name)[1]
+    # Safe unique temp file (avoids conflicts)
+    temp_path = f"temp_{uuid.uuid4()}{os.path.splitext(uploaded_file.name)[1]}"
 
     with open(temp_path, "wb") as f:
         f.write(uploaded_file.read())
 
+    # Parse + analyze
     subtitles = parse_file(temp_path)
     report = analyze_subtitles(subtitles)
 
+    # Save to history DB
     save_report(uploaded_file.name, report)
 
 
@@ -93,24 +80,31 @@ if uploaded_file:
 
 
     # -----------------------
-    # QC ISSUES (RED UI)
+    # QC ISSUES
     # -----------------------
     st.subheader("❗ QC Issues")
 
     if report["issues"]:
+
         for issue in report["issues"]:
 
             if issue["type"] == "OVERLAP":
-                st.error(f"OVERLAP between {issue['index']} and {issue['next_index']}")
+                st.error(
+                    f"OVERLAP between {issue['index']} and {issue['next_index']} "
+                    f"(end {issue['curr_end']} → start {issue['next_start']})"
+                )
 
             elif issue["type"] == "LONG_LINE":
                 st.warning(f"LONG LINE: {issue['text']}")
 
             elif issue["type"] == "EMPTY_SUBTITLE":
-                st.error(f"EMPTY subtitle at {issue['index']}")
+                st.error(f"EMPTY subtitle at index {issue['index']}")
+
+            else:
+                st.info(issue)
 
     else:
-        st.success("No QC issues found 🎉")
+        st.success("🎉 No QC issues found")
 
 
     # -----------------------
@@ -133,7 +127,7 @@ if uploaded_file:
 
 
 # -----------------------
-# HISTORY
+# HISTORY SECTION
 # -----------------------
 st.divider()
 st.subheader("📚 History")
@@ -141,9 +135,11 @@ st.subheader("📚 History")
 history = get_history()
 
 if history:
+
     for filename, timestamp, report_json in history:
 
         with st.expander(f"{filename} - {timestamp}"):
             st.json(json.loads(report_json))
+
 else:
     st.info("No history yet")
