@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tt xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.w3.org/ns/ttml" xmlns:tt="http://www.w3.org/ns/ttml" xmlns:tts="http://www.w3.org/ns/ttml#styling"
+  xmlns:ttp="http://www.w3.org/ns/ttml#parameter" xml:lang="en-US" ttp:timeBase="smpte" ttp:frameRate="30" ttp:frameRateMultiplier="999 1000" ttp:dropMode="dropNTSC">
+  <head>
+    <styling>
+      <style xml:id="white" tts:fontFamily="sansSerif" tts:fontWeight="normal" tts:fontStyle="normal" tts:color="white" tts:fontSize="100%"/>
+    </styling>
+    <layout>
+      <region xml:id="bottom" tts:origin="0% 85%" tts:extent="100% 15%" tts:textAlign="center" tts:displayAlign="after"/>
+    </layout>
+  </head>
+  <body style="white" region="bottom">
+    <div>
+      <p begin="00:00:00:00" end="00:00:03:01"><i>Pop-on captions,</i><br/>pop on and off the screen</p>
+      <p begin="00:00:03:02" end="00:00:06:02">They are used with programs<br/>with multiple characters.</p>
+      <p begin="00:00:06:03" end="00:00:08:13">They can be<br/>strategically placed</p>
+      <p begin="00:00:08:14" end="00:00:11:04">as to indicate to the viewer<br/>who is speaking.</p>
+      <p begin="00:00:11:05" end="00:00:12:11">For example,</p>
+      <p begin="00:00:12:12" end="00:00:13:18">if the person<br/>is on the left side</p>
+      <p begin="00:00:13:19" end="00:00:14:21"><br/>of the screen</p>
+      <p begin="00:00:14:22" end="00:00:16:00">the pop-on captions<br/>would appear</p>
+      <p begin="00:00:16:01" end="00:00:17:17">on the left side.</p>
+      <p begin="00:00:17:18" end="00:00:18:28">If they are<br/>in the middle,</p>
+      <p begin="00:00:18:29" end="00:00:20:22">the caption would appear<br/>in the middle.</p>
+      <p begin="00:00:20:23" end="00:00:22:09">Or, if they are on<br/>the right side</p>
+      <p begin="00:00:22:10" end="00:00:23:16">of the screen</p>
+      <p begin="00:00:23:17" end="00:00:25:16">caption would pop-on<br/>the right side.</p>
+    </div>
+  </body>
+</tt>

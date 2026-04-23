@@ -1,11 +1,15 @@
+import os
 from parsers.srt_parser import parse_srt
-from analyzer.text_analysis import analyze_subtitles
+from parsers.itt_parser import parse_itt
 
-file_path = "samples/sample.srt"
+def parse_file(file_path):
+    ext = os.path.splitext(file_path)[1].lower()
 
-subtitles = parse_srt(file_path)
+    if ext == ".srt":
+        return parse_srt(file_path)
 
-report = analyze_subtitles(subtitles)
+    elif ext == ".itt":
+        return parse_itt(file_path)
 
-print("\n--- ANALYSIS REPORT ---")
-print(report)
+    else:
+        raise ValueError("Unsupported format")
