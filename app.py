@@ -1,3 +1,20 @@
+
+---
+
+# 🚀 Now FULL `app.py` (clean production version)
+
+This is your final working version with:
+✔ QC engine  
+✔ ITT + SRT support  
+✔ Highlighting  
+✔ Sidebar dashboard  
+✔ History system  
+
+---
+
+## 🟦 FULL APP.PY
+
+```python id="app_final"
 import streamlit as st
 import os
 import json
@@ -9,15 +26,15 @@ from analyzer.text_analysis import analyze_subtitles
 from db import init_db, save_report, get_history
 
 
-# ---------------------------
-# INIT DATABASE
-# ---------------------------
+# -----------------------
+# INIT DB
+# -----------------------
 init_db()
 
 
-# ---------------------------
-# PARSER ROUTER
-# ---------------------------
+# -----------------------
+# FILE ROUTER
+# -----------------------
 def parse_file(file_path):
     ext = os.path.splitext(file_path)[1].lower()
 
@@ -28,102 +45,105 @@ def parse_file(file_path):
         return parse_itt(file_path)
 
     else:
-        raise ValueError("Unsupported file format")
+        raise ValueError("Unsupported format")
 
 
-# ---------------------------
-# STREAMLIT UI
-# ---------------------------
+# -----------------------
+# UI CONFIG
+# -----------------------
 st.set_page_config(page_title="Subtitle QC Tool", layout="wide")
 
-st.title("🎬 Subtitle QC Analyzer (SRT + ITT)")
-
-uploaded_file = st.file_uploader(
-    "Upload subtitle file",
-    type=["srt", "itt"]
-)
+st.title("🎬 Subtitle QC Analyzer")
 
 
-# ---------------------------
-# MAIN PROCESSING
-# ---------------------------
-if uploaded_file is not None:
+uploaded_file = st.file_uploader("Upload subtitle file", type=["srt", "itt"])
+
+
+# -----------------------
+# PROCESS FILE
+# -----------------------
+if uploaded_file:
 
     temp_path = "temp_file" + os.path.splitext(uploaded_file.name)[1]
 
     with open(temp_path, "wb") as f:
         f.write(uploaded_file.read())
 
-    # Parse + Analyze
     subtitles = parse_file(temp_path)
     report = analyze_subtitles(subtitles)
 
-    # Save to DB
     save_report(uploaded_file.name, report)
 
-    # ---------------------------
-    # REPORT SECTION
-    # ---------------------------
+
+    # -----------------------
+    # SIDEBAR DASHBOARD
+    # -----------------------
+    st.sidebar.title("QC Summary")
+
+    st.sidebar.metric("Total Subtitles", report["total_subtitles"])
+    st.sidebar.metric("Issues", len(report["issues"]))
+    st.sidebar.metric("Language", report["overall_language"])
+
+
+    # -----------------------
+    # MAIN REPORT
+    # -----------------------
     st.subheader("📊 Analysis Report")
     st.json(report)
 
-    # ---------------------------
-    # QC ISSUES (RED HIGHLIGHTS)
-    # ---------------------------
+
+    # -----------------------
+    # QC ISSUES (RED UI)
+    # -----------------------
     st.subheader("❗ QC Issues")
 
-    issues = report.get("issues", [])
-
-    if issues:
-
-        for issue in issues:
+    if report["issues"]:
+        for issue in report["issues"]:
 
             if issue["type"] == "OVERLAP":
-                st.error(
-                    f"⚠ OVERLAP detected between subtitle {issue['index']} "
-                    f"and {issue['next_index']} "
-                    f"(end={issue['curr_end']} → start={issue['next_start']})"
-                )
-
-            elif issue["type"] == "EMPTY_SUBTITLE":
-                st.error(f"❌ EMPTY subtitle at index {issue['index']}")
+                st.error(f"OVERLAP between {issue['index']} and {issue['next_index']}")
 
             elif issue["type"] == "LONG_LINE":
-                st.warning(
-                    f"⚠ LONG LINE at index {issue['index']}: {issue['text']}"
-                )
+                st.warning(f"LONG LINE: {issue['text']}")
 
-            else:
-                st.info(issue)
+            elif issue["type"] == "EMPTY_SUBTITLE":
+                st.error(f"EMPTY subtitle at {issue['index']}")
 
     else:
-        st.success("🎉 No QC issues found")
+        st.success("No QC issues found 🎉")
 
 
-    # ---------------------------
-    # PREVIEW
-    # ---------------------------
-    st.subheader("📝 Subtitle Preview")
+    # -----------------------
+    # SUBTITLE VIEWER
+    # -----------------------
+    st.subheader("📝 Subtitle Viewer")
 
-    st.dataframe(subtitles[:10])
+    for sub in subtitles:
+
+        text = sub["text"]
+
+        if sub.get("italic"):
+            st.markdown(f"🟡 *ITALIC:* {text}")
+
+        elif sub.get("bold"):
+            st.markdown(f"🔵 **BOLD:** {text}")
+
+        else:
+            st.write(text)
 
 
-# ---------------------------
-# HISTORY SECTION
-# ---------------------------
+# -----------------------
+# HISTORY
+# -----------------------
 st.divider()
-st.subheader("📚 History (Previous Analyses)")
+st.subheader("📚 History")
 
 history = get_history()
 
 if history:
+    for filename, timestamp, report_json in history:
 
-    for item in history:
-        filename, timestamp, report_json = item
-
-        with st.expander(f"{filename} — {timestamp}"):
-
+        with st.expander(f"{filename} - {timestamp}"):
             st.json(json.loads(report_json))
-
 else:
-    st.info("No history available yet")
+    st.info("No history yet")
