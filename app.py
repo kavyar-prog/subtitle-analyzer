@@ -4,11 +4,11 @@
 # 🚀 Now FULL `app.py` (clean production version)
 
 This is your final working version with:
-✔ QC engine  
-✔ ITT + SRT support  
-✔ Highlighting  
-✔ Sidebar dashboard  
-✔ History system  
+# QC engine  
+# ITT + SRT support  
+# Highlighting  
+# Sidebar dashboard  
+# History system  
 
 ---
 
